@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.crainyday.sport.mapper.MatchMapper">
+	<insert id="addMatch" useGeneratedKeys="true" keyProperty="matchId">
+		INSERT INTO `match`(event_id, referee_id, match_group, match_type, match_num, user_ids) 
+		VALUES(#{eventId}, #{refereeId}, #{matchGroup}, #{matchType}, #{matchNum}, #{userIds})
+	</insert>
+	<select id="getMatchIdsByEventId" resultType="Integer">
+		SELECT match_id FROM `match` WHERE event_id = #{eventId}
+	</select>
+	<select id="getMatchesByReferee" resultType="com.crainyday.sport.data.MatchReferee">
+		SELECT match_id, match_group, match_type, match_num, match_time, event_name 
+		FROM `match`, event WHERE referee_id = #{refereeId} AND 
+		(`match`.match_time IS NULL OR `match`.match_time > NOW()) AND 
+		`match`.event_id in 
+		<foreach collection="eventIds" index="index" item="eventId" separator="," open="(" close=")">
+    		#{eventId}
+  		</foreach> 
+		AND `match`.event_id = event.event_id
+	</select>
+	<select id="getMatchesByEventId" resultType="com.crainyday.sport.data.MatchReferee">
+		SELECT match_id, match_group, match_type, match_num, match_time, event_name 
+		FROM `match`, event WHERE `match`.event_id = #{eventId} AND 
+		(`match`.match_time IS NULL OR `match`.match_time > NOW()) AND 
+		`match`.event_id = event.event_id LIMIT #{page}, #{limit}
+	</select>
+	<select id="getUserIdsByMatchId" resultType="String">
+		SELECT user_ids FROM `match` WHERE match_id = #{matchId}
+	</select>
+	<select id="getMatchesByMatchIds" resultType="com.crainyday.sport.data.MatchUser">
+		SELECT `match`.match_id, match_group, match_type, match_num, match_time, event_name, runway 
+		FROM `match` , event, grade WHERE `match`.match_id IN 
+		<foreach collection="matchIds" index="index" item="matchId" separator="," open="(" close=")">
+    		#{matchId}
+  		</foreach> 
+  		AND (`match`.match_time IS NULL OR `match`.match_time > NOW())
+		AND `match`.event_id = event.event_id 
+		AND grade.match_id = `match`.match_id AND grade.user_id = #{userId}
+	</select>
+	<update id="updateMatchTime">
+		UPDATE `match` SET `match`.match_time = #{matchTime} WHERE match_id = #{matchId}
+	</update>
+	<select id="judgeCreatMatches" resultType="Boolean">
+		SELECT COUNT(match_id) FROM `match` WHERE event_id = #{eventId} AND 
+		(`match`.match_time IS NULL OR `match`.match_time > NOW())
+	</select>
+	<select id="getEventNewestMatchIds" resultType="Integer">
+		SELECT match_id FROM `match` WHERE event_id = #{eventId} AND 
+		`match`.match_time > NOW()
+	</select>
+</mapper>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.crainyday.sport.mapper.GeneralMapper">
+	<select id="getGeneralByIdentity" resultType="General">
+		SELECT general_id, user_id, identity, admin_id, general_class, general_name, general_gender, general_college, general_phone 
+		FROM general WHERE identity = #{identity} LIMIT 1
+	</select>
+	<select id="getIdentityByUserId" resultType="String">
+		SELECT identity FROM general WHERE user_id = #{userId}
+	</select>
+	<update id="updateGeneral">
+		UPDATE general 
+		<set>
+		  	<if test="generalClass!=null">
+		  		general_class = #{generalClass},
+		  	</if>
+		  	<if test="generalName!=null">
+		  		general_name = #{generalName},
+		  	</if>
+		  	<if test="generalPhone!=null">
+		  		general_phone = #{generalPhone},
+		  	</if>
+		  	<if test="generalCollege!=null">
+		  		general_college = #{generalCollege},
+		  	</if>
+		  	<if test="generalGender!=null">
+		  		general_gender = #{generalGender},
+		  	</if>
+		  	<if test="userId!=null">
+		  		user_id = #{userId}
+		  	</if>
+	  	</set>
+		WHERE general_id = #{generalId}
+	</update>
+	<insert id="addGeneralByExcel">
+		INSERT INTO general (identity, admin_id, general_class, general_name, general_gender, general_college, general_phone) VALUES 
+	  	<foreach collection="datas" item="data" separator=",">
+  			(#{data.identity}, #{userId}, #{data.generalClass}, #{data.generalName}, #{data.generalGender}, #{data.generalCollege}, #{data.generalPhone})
+  		</foreach>
+	</insert>
+	<select id="getSportsmanInfo" resultType="com.crainyday.sport.data.SportsmanInfo">
+		SELECT `general`.user_id, identity, general_class, general_name, grade_remark, runway 
+		FROM `general` LEFT JOIN grade ON `general`.user_id = grade.user_id AND 
+		match_id = #{matchId} WHERE `general`.user_id IN 
+		<foreach collection="userIds" index="index" item="userId" separator="," open="(" close=")">
+    		#{userId}
+  		</foreach>
+	</select>
+	
+	<select id="getCheckInfo" resultType="com.crainyday.sport.data.SportsmanInfo">
+		SELECT `general`.user_id, identity, general_class, general_name, general_college, 
+		grade_id, grade_remark, runway, event_name, 
+		match_group, match_type, match_num, match_time 
+		FROM `general`, grade, `match`, `event`
+		WHERE `general`.user_id = #{userId} AND grade.user_id = #{userId} AND 
+		`match`.match_id = grade.match_id AND `event`.`event_id` = `match`.`event_id` AND
+		`match`.match_id IN 
+		<foreach collection="matchIds" item="matchId" open="(" separator="," close=")">
+			#{matchId}
+		</foreach> AND match_time > NOW() LIMIT 1
+	</select>
+	<select id="getTeamInfo" resultType="com.crainyday.sport.data.TeamInfo">
+		SELECT apply_id, runway, team_score, general_class, general_college 
+		FROM apply_team, general WHERE apply_team.user_id IN 
+		<foreach collection="userIds" item="userId" open="(" separator="," close=")">
+			#{userId}
+		</foreach>
+		AND team_score IS NULL AND general.user_id = apply_team.user_id
+	</select>
+	<select id="getUserIds" resultType="Integer">
+		SELECT user_id FROM general WHERE identity IN 
+		<foreach collection="ids" item="id" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+		AND user_id IS NOT NULL
+	</select>
+</mapper>

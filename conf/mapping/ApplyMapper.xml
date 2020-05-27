@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.crainyday.sport.mapper.ApplyMapper">
+	<insert id="addApply">
+		INSERT INTO apply(user_id, event_id, match_ids) VALUES
+		(
+			#{userId}, #{eventId},
+			<if test="matchIds!=null">
+				#{matchIds}
+			</if>
+			<if test="matchIds==null">
+				NULL
+			</if>
+		)
+	</insert>
+	<select id="judgeApply" resultType="Boolean">
+		SELECT COUNT(apply_id) FROM apply 
+		WHERE user_id = #{userId} AND event_id = #{eventId}
+	</select>
+	<delete id="delApply">
+		DELETE FROM apply WHERE user_id = #{userId} AND event_id = #{eventId}
+	</delete>
+	<select id="getApplysByEventId" resultType="Apply">
+		SELECT apply_id, user_id FROM apply WHERE event_id = #{eventId}
+	</select>
+	<select id="getApplysByUserIds" resultType="Apply">
+		SELECT apply_id, user_id, match_ids FROM apply WHERE user_id IN 
+		<foreach collection="userIds" item="userId" open="(" separator="," close=")">
+			#{userId}
+		</foreach>
+		AND event_id = #{eventId}
+	</select>
+	<update id="updateMatchIds">
+		UPDATE apply SET match_ids = #{matchIds} WHERE apply_id IN 
+		<foreach collection="applys" index="index" item="apply" separator="," open="(" close=")">
+    		#{apply.applyId}
+  		</foreach>
+	</update>
+	<update id="updateMatchIdsByApply">
+		UPDATE apply SET match_ids = #{matchIds} WHERE apply_id = #{applyId}
+	</update>
+	<select id="getMatchesByEventIds" resultType="String">
+		SELECT match_ids FROM apply WHERE 
+		user_id = #{userId} AND event_id IN 
+		<foreach collection="eventIds" index="index" item="eventId" separator="," open="(" close=")">
+    		#{eventId}
+  		</foreach>
+  		AND match_ids IS NOT NULL
+	</select>
+	<select id="getApplysByUserId" resultType="com.crainyday.sport.data.ApplyUser">
+		SELECT apply_id, apply.event_id, apply.create_time, event_name FROM apply, event 
+		WHERE user_id = #{userId} AND apply.event_id IN 
+		<foreach collection="eventIds" index="index" item="eventId" separator="," open="(" close=")">
+    		#{eventId}
+  		</foreach>
+  		AND event.event_id = apply.event_id
+	</select>
+	<select id="getMatchIds" resultType="String">
+		SELECT match_ids FROM apply WHERE 
+		user_id = #{userId} AND event_id = #{eventId} 
+  		AND match_ids IS NOT NULL
+	</select>
+</mapper>

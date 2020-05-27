@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.crainyday.sport.mapper.TeamMapper">
+	<insert id="applyTeam">
+		INSERT INTO apply_team(user_id, event_id, user_ids) VALUES
+		(#{userId}, #{eventId}, #{userIds})
+	</insert>
+	<select id="judgeApply" resultType="Boolean">
+		SELECT COUNT(apply_id) FROM apply_team 
+		WHERE user_id = #{userId} AND event_id = #{eventId}
+	</select>
+	<select id="getApplysByEventId" resultType="Team">
+		SELECT apply_id, user_id, user_ids FROM apply_team WHERE event_id = #{eventId}
+	</select>
+	<select id="getApplysByScore" resultType="Team">
+		SELECT apply_id, user_id, user_ids, match_ids FROM apply_team 
+		WHERE event_id = #{eventId} AND team_score IS NOT NULL 
+		ORDER BY team_score DESC LIMIT #{number}
+	</select>
+	<update id="updateMatchIdsByTeam">
+		UPDATE apply_team 
+		<set>
+			<if test="matchIds!=null">
+				match_ids = #{matchIds},
+			</if>
+			<if test="runway!=null">
+				runway = #{runway},
+			</if>
+			<if test="teamScore==null">
+				team_score = NULL,
+			</if>
+		</set>
+		WHERE apply_id = #{applyId}
+	</update>
+	<delete id="delTeam">
+		DELETE FROM apply_team WHERE user_id = #{userId} AND event_id = #{eventId}
+	</delete>
+	<select id="getTeamUserIds" resultType="String">
+		SELECT user_ids FROM apply_team WHERE user_id = #{userId} AND event_id = #{eventId}
+	</select>
+	<select id="getUserIdsByApplyId" resultType="String">
+		SELECT user_ids FROM apply_team WHERE apply_id = #{applyId}
+	</select>
+	<update id="updateTeamScore">
+		UPDATE apply_team SET team_score = #{teamScore} WHERE apply_id = #{applyId} AND team_score IS NOT NULL
+	</update>
+	<select id="getApplysByUserId" resultType="com.crainyday.sport.data.ApplyUser">
+		SELECT apply_id, apply_team.event_id, apply_team.create_time, event_name FROM apply_team, event 
+		WHERE user_id = #{userId} AND apply_team.event_id IN 
+		<foreach collection="eventIds" index="index" item="eventId" separator="," open="(" close=")">
+    		#{eventId}
+  		</foreach>
+  		AND event.event_id = apply_team.event_id
+	</select>
+	
+	
+	
+	<update id="updateMatchIds">
+		UPDATE apply SET match_ids = #{matchIds} WHERE apply_id IN 
+		<foreach collection="applys" index="index" item="apply" separator="," open="(" close=")">
+    		#{apply.applyId}
+  		</foreach>
+	</update>
+	<select id="getMatchesByEventIds" resultType="String">
+		SELECT match_ids FROM apply WHERE 
+		user_id = #{userId} AND event_id IN 
+		<foreach collection="eventIds" index="index" item="eventId" separator="," open="(" close=")">
+    		#{eventId}
+  		</foreach>
+	</select>
+</mapper>

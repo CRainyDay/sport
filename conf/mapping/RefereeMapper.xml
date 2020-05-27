@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.crainyday.sport.mapper.RefereeMapper">
+	<select id="getRefereeIdsByIdentity" resultType="Integer">
+		SELECT referee_id FROM referee WHERE identity = #{identity}
+	</select>
+	<update id="batchUpdateReferee">
+		UPDATE referee 
+		<set>
+			<if test="userId!=null">
+				user_id = #{userId}, 
+			</if>
+			<if test="refereePhone!=null">
+				referee_phone = #{refereePhone} 
+			</if>
+		</set>
+		WHERE referee_id IN 
+		<foreach collection="refereeIds" item="refereeId" open="(" separator="," close=")">
+			#{refereeId}
+		</foreach>
+	</update>
+	<select id="getAdminByRefereeId" resultType="Integer">
+		SELECT admin_id FROM referee, games WHERE 
+		referee_id = #{refereeId} AND referee.games_id = games.games_id
+	</select>
+	<!-- 注意: 此处存在隐患 -->
+	<update id="updateReferee">
+		UPDATE referee
+		<set>
+		  	<if test="userId!=null">
+		  		user_id = #{userId},
+		  	</if>
+		  	<if test="refereePhone!=null">
+		  		referee_phone = #{refereePhone},
+		  	</if>
+	  	</set>
+		WHERE referee_id = #{refereeId}
+	</update>
+	<insert id="addRefereeByExcel">
+		INSERT INTO referee (identity, referee_name, referee_phone, games_id)
+		VALUES 
+	  	<foreach collection="datas" item="data" separator=",">
+  			(#{data.identity}, #{data.refereeName}, #{data.refereePhone}, #{gamesId})
+  		</foreach>
+	</insert>
+	<delete id="delReferee">
+		DELETE FROM referee WHERE referee_id = #{refereeId}
+	</delete>
+	<select id="getGamesIds" resultType="Integer">
+		SELECT games_id FROM referee WHERE user_id = #{userId}
+	</select>
+	<select id="getRefereeIdsByGamesId" resultType="Integer">
+		SELECT referee_id FROM referee WHERE games_id = #{gamesId}
+	</select>
+	<select id="getRefereeId" resultType="Integer">
+		SELECT referee_id FROM referee WHERE user_id = #{userId} AND games_id = #{gamesId}
+	</select>
+	<select id="getRefereesByGamesId" resultType="com.crainyday.sport.data.RefereeAdmin" >
+		SELECT referee_id, `referee`.identity, referee_name, referee_phone FROM `referee` 
+		WHERE games_id = #{gamesId} ORDER BY referee_id LIMIT #{page}, #{limit}
+	</select>
+	<select id="getRefereeList" resultType="Referee">
+		SELECT user_id, identity, referee_name, referee_phone FROM referee WHERE games_id = #{gamesId} ORDER BY user_id
+	</select>
+	<select id="judgePull" resultType="Boolean">
+		SELECT COUNT(*) FROM referee WHERE games_id = #{gamesId} LIMIT 1
+	</select>
+	<insert id="addRefereeByList">
+		INSERT INTO referee (identity, referee_name, referee_phone, user_id, games_id) VALUES 
+	  	<foreach collection="referees" item="referee" separator=",">
+  			(#{referee.identity}, #{referee.refereeName}, #{referee.refereePhone},
+  			#{referee.userId}, #{gamesId})
+  		</foreach>
+	</insert>
+	<update id="cancelIdentity">
+		UPDATE referee SET user_id = NULL WHERE referee_id = #{refereeId}
+	</update>
+	<select id="judgeNullReferee" resultType="Boolean">
+		SELECT COUNT(referee_id) FROM referee WHERE user_id = #{userId}
+	</select>
+	<select id="getNewRefereeIds" resultType="Integer">
+		SELECT referee_id FROM referee, general WHERE general.user_id = #{userId}
+		AND general.identity = referee.identity AND referee.user_id IS NULL
+	</select>
+</mapper>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.crainyday.sport.mapper.GradeMapper">
+	<insert id="addGradeReamrk">
+		INSERT INTO grade(match_id, user_id, grade_remark)
+		VALUES(#{matchId}, #{userId}, #{gradeRemark})
+	</insert>
+	<insert id="addGradeRunway">
+		INSERT INTO grade(match_id, user_id, runway)
+		VALUES(#{matchId}, #{userId}, #{runway})
+	</insert>
+	<update id="updateGrade">
+		UPDATE grade 
+		<set>
+			grade_score = #{gradeScore},
+		  	<if test="gradeResult!=null">
+		  		grade_result = #{gradeResult},
+		  	</if>
+		  	<if test="gradeRanking!=null">
+		  		grade_ranking = #{gradeRanking},
+		  	</if>
+		  	<if test="gradeRemark!=null">
+		  		grade_remark = #{gradeRemark}
+		  	</if>
+	  	</set>
+	  	<if test="gradeId!=null">
+	  		WHERE grade_id = #{gradeId}
+	  	</if>
+	  	<if test="gradeId==null">
+	  		WHERE match_id = #{matchId} AND user_id = #{userId} AND 
+	  		grade_result IS NULL
+	  	</if>
+	</update>
+	<select id="getBestGrades" resultType="com.crainyday.sport.data.BestGrade">
+		SELECT grade_result, identity, general_class, general_name 
+		FROM grade, general WHERE grade_result IS NOT NULL AND 
+		grade.user_id = general.user_id AND match_id IN 
+		<foreach collection="matchIds" item="matchId" open="(" separator="," close=")">
+			#{matchId}
+		</foreach>
+		AND grade_score != 0 ORDER BY grade_score DESC LIMIT 10
+	</select>
+	<select id="getBestUserIds" resultType="Integer">
+		SELECT user_id FROM grade WHERE match_id IN 
+		<foreach collection="matchIds" item="matchId" open="(" separator="," close=")">
+			#{matchId}
+		</foreach>
+		AND grade_score != 0 ORDER BY grade_score DESC LIMIT #{number}
+	</select>
+	<select id="getGradesByUserId" resultType="com.crainyday.sport.data.GradeUser">
+		SELECT grade_id, grade_result, grade_ranking, grade_remark, grade.create_time, 
+		event_name, match_group, match_type, match_num, match_time 
+		FROM grade, `match`, `event` WHERE user_id = #{userId} AND 
+		`grade`.match_id IN 
+		<foreach collection="matchIds" index="index" item="matchId" separator="," open="(" close=")">
+    		#{matchId}
+  		</foreach>
+		AND grade.match_id = match.match_id AND `match`.event_id = event.event_id 
+		AND grade.grade_remark IS NOT NULL LIMIT #{page}, #{limit}
+	</select>
+</mapper>

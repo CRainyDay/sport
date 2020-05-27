@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.crainyday.sport.mapper.EventMapper">
+	<insert id="addEventByExcel">
+		INSERT INTO event (games_id, event_name, event_desc, 
+		event_rule, event_num, record_grade, record_name, record_college,
+		record_games, record_tp) VALUES 
+	  	<foreach collection="datas" item="data" separator=",">
+  			(#{gamesId}, #{data.eventName}, #{data.eventDesc}, 
+  			#{data.eventRule}, #{data.eventNum}, #{data.recordGrade},
+  			#{data.recordName}, #{data.recordCollege}, 
+  			#{data.recordGames}, #{data.recordTp})
+  		</foreach>
+	</insert>
+	<update id="updateEvent">
+		UPDATE event
+		<set>
+		  	<if test="eventName!=null">
+		  		event_name = #{eventName},
+		  	</if>
+		  	<if test="eventDesc!=null">
+		  		event_desc = #{eventDesc},
+		  	</if>
+		  	<if test="eventRule!=null">
+		  		event_rule = #{eventRule},
+		  	</if>
+		  	<if test="eventNum!=null and eventNum>0">
+		  		event_num = #{eventNum},
+		  	</if>
+		  	<if test="eventApply==1">
+		  		event_apply = event_apply + 1
+	  		</if>
+		  	<if test="eventApply==-1">
+		  		event_apply = event_apply - 1
+	  		</if>
+	  	</set>
+		WHERE event_id = #{eventId}
+	</update>
+	<delete id="delEvent">
+		DELETE FROM event WHERE event_id = #{eventId}
+	</delete>
+	<select id="getEventByEventId" resultType="Event">
+		SELECT event_id, games_id, event_name, event_desc, 
+		event_rule, event_num, event_apply, record_grade, record_name, record_college,
+		record_games, record_tp 
+		FROM event WHERE event_id = #{eventId}
+	</select>
+	<select id="getEventByGamesId" resultType="com.crainyday.sport.data.BriefEvent">
+		SELECT event_id, event_name 
+		FROM event WHERE games_id = #{gamesId} LIMIT #{page}, #{limit}
+	</select>
+	<select id="judgeCreateFirstMatches" resultType="Boolean">
+		SELECT COUNT(event_turns) FROM `event` WHERE event_id = #{eventId} AND event_turns != 0
+	</select>
+	<select id="getEventAdmin" resultType="com.crainyday.sport.data.EventAdmin">
+		SELECT event_id, event_name, event_apply, event_match, event_turns 
+		FROM event WHERE games_id = #{gamesId} LIMIT #{page}, #{limit}
+	</select>
+	<update id="updateEventTurns">
+		UPDATE `event` 
+		<set>
+			<if test="eventMatch!=null">
+				event_match = #{eventMatch},
+			</if>
+			<if test="eventTurns==1">
+				event_turns = event_turns + 1
+			</if>
+		</set> 
+		WHERE event_id = #{eventId}
+	</update>
+	<select id="judgeEventFull" resultType="Boolean">
+		SELECT COUNT(event_id) FROM event WHERE 
+		event_id = #{eventId} AND event_num &lt;= event_apply
+	</select>
+	<select id="getEventsByGamesId" resultType="Event">
+		SELECT event_id, event_apply FROM event WHERE games_id = #{gamesId} AND event_apply > 0
+	</select>
+	<resultMap type="HashMap" id="eventAndApplyResMap">
+		<result column="event_id" property="key" />
+		<result column="event_apply" property="value"/>
+	</resultMap>
+	<select id="getEventIdsByGamesId" resultType="Integer">
+		SELECT event_id FROM event WHERE games_id = #{gamesId} AND event_apply > 0
+	</select>
+	<select id="getEventList" resultType="Event">
+		SELECT event_name, event_desc, event_rule, event_num, record_grade, record_name, record_college,
+		record_games, record_tp 
+		FROM `event` WHERE games_id = #{gamesId} ORDER BY event_id
+	</select>
+	<select id="judgePull" resultType="Boolean">
+		SELECT COUNT(*) FROM `event` WHERE games_id = #{gamesId} LIMIT 1
+	</select>
+	<insert id="addEventByList">
+		INSERT INTO event (games_id, event_name, event_desc, 
+		event_rule, event_num, record_grade, record_name, record_college,
+		record_games, record_tp) VALUES 
+	  	<foreach collection="events" item="event" separator=",">
+  			(#{gamesId}, #{event.eventName}, #{event.eventDesc}, 
+  			#{event.eventRule}, #{event.eventNum}, #{event.recordGrade},
+  			#{event.recordName}, #{event.recordCollege},
+  			#{event.recordGames}, #{event.recordTp})
+  		</foreach>
+	</insert>
+</mapper>

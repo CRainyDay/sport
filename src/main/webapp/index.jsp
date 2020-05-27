@@ -4,9 +4,9 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
+<title>Sport</title>
 </head>
 <body>
-	<h2 align="center"><a href="emps">List All Employees</a></h2>
+	<h2 align="center">Hello 运动会Plus助手!</h2>
 </body>
 </html>
