@@ -5,42 +5,55 @@
 	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
 	xmlns:tx="http://www.springframework.org/schema/tx"
 	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:task="http://www.springframework.org/schema/task"
 	xsi:schemaLocation="http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.3.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
-	<context:component-scan base-package="com.crainyday.sport">
-		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
-		<context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.RestControllerAdvice"/>
+	<context:component-scan
+		base-package="com.crainyday.sport">
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.web.bind.annotation.RestControllerAdvice" />
 	</context:component-scan>
-	
-	<context:property-placeholder location="classpath:db.properties,classpath:email.properties,classpath:wx.properties"/>
-	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+
+	<context:property-placeholder
+		location="classpath:db.properties,classpath:email.properties,classpath:wx.properties" />
+	<bean id="dataSource"
+		class="com.mchange.v2.c3p0.ComboPooledDataSource">
 		<property name="driverClass" value="${jdbc.driver}"></property>
 		<property name="jdbcUrl" value="${jdbc.url}"></property>
 		<property name="user" value="${jdbc.username}"></property>
-		<property name="password" value="${jdbc.password}"></property>  
-        <property name="acquireRetryAttempts" value="0"/>
-		<property name="maxIdleTime" value="3600"/>
-		<property name="preferredTestQuery" value="select 1"/>
-		<property name="idleConnectionTestPeriod" value="18000"/>
-		<property name="testConnectionOnCheckout" value="false"/>
+		<property name="password" value="${jdbc.password}"></property>
+		<property name="acquireRetryAttempts" value="0" />
+		<property name="maxIdleTime" value="3600" />
+		<property name="preferredTestQuery" value="select 1" />
+		<property name="idleConnectionTestPeriod" value="18000" />
+		<property name="testConnectionOnCheckout" value="false" />
 	</bean>
 	<!-- 配置事务 -->
-	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource" ref="dataSource"></property>
 	</bean>
 	<!-- 基于注解使用事务 -->
-	<tx:annotation-driven transaction-manager="transactionManager" />
+	<tx:annotation-driven
+		transaction-manager="transactionManager" />
 	<bean class="org.mybatis.spring.SqlSessionFactoryBean">
-		<property name="configLocation" value="classpath:mybatis-config.xml"></property>
-		<property name="mapperLocations" value="classpath:mapping/*.xml"></property>
+		<property name="configLocation"
+			value="classpath:mybatis-config.xml"></property>
+		<property name="mapperLocations"
+			value="classpath:mapping/*.xml"></property>
 		<property name="dataSource" ref="dataSource"></property>
-		<property name="typeAliasesPackage" value="com.crainyday.sport.entity"></property>
+		<property name="typeAliasesPackage"
+			value="com.crainyday.sport.entity"></property>
 	</bean>
-	<mybatis-spring:scan base-package="com.crainyday.sport.mapper"/>
-	
+	<mybatis-spring:scan
+		base-package="com.crainyday.sport.mapper" />
+
 	<bean id="javaMailSender"
 		class="org.springframework.mail.javamail.JavaMailSenderImpl">
 		<property name="protocol" value="${email.protocol}" />
@@ -56,5 +69,6 @@
 			</props>
 		</property>
 	</bean>
-	
+	<!-- 设置定时任务/支持异步方法 -->
+	<task:annotation-driven />
 </beans>
