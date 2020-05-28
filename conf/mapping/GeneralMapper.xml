@@ -29,7 +29,10 @@
 		  	<if test="generalGender!=null">
 		  		general_gender = #{generalGender},
 		  	</if>
-		  	<if test="userId!=null">
+		  	<if test="userId==-1">
+		  		user_id = NULL,
+		  	</if>
+		  	<if test="userId!=null and userId!=-1">
 		  		user_id = #{userId}
 		  	</if>
 	  	</set>

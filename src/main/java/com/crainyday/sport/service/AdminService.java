@@ -25,6 +25,10 @@ public interface AdminService {
 	 */
 	public void addRefereeByExcel(String filepath, Integer gamesId, Integer adminId);
 	/**
+	 * 重置用户认证信息
+	 */
+	public void resetIdentity(String identity, Integer adminId) throws Exception;
+	/**
 	 * 拉取某个运动会的裁判信息
 	 */
 	public void pullReferee(Integer fromGamesId, Integer toGamesId) throws Exception;

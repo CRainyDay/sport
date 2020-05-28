@@ -32,6 +32,7 @@ import com.crainyday.sport.utils.CodeUtil;
  * /sendCode:				认证管理员前, 发送认证验证码到教育邮箱
  * /adminIdentify:			管理员认证
  * /uploadGeneralExcel:		管理员上传普通用户信息
+ * /resetIdentity:			重置用户认证信息
  * 
  * /addGames:				添加运动会信息
  * /updateGames:			修改运动会信息
@@ -121,6 +122,19 @@ public class AdminHandler {
 		return map;
 	}
 	
+	/**
+	 * 重置用户认证信息
+	 */
+	@PostMapping("resetIdentity")
+	public Map<String, Object> resetIdentity(
+			@RequestParam("identity")String identity,
+			@RequestAttribute("user")User user) throws Exception{
+		adminService.resetIdentity(identity, user.getUserId());
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("errmsg", "重置成功");
+		map.put("status", 200);
+		return map;
+	}
 	
 	
 	/**

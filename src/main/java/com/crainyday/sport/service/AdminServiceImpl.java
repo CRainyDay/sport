@@ -24,6 +24,7 @@ import com.crainyday.sport.entity.Admin;
 import com.crainyday.sport.entity.Apply;
 import com.crainyday.sport.entity.Event;
 import com.crainyday.sport.entity.Games;
+import com.crainyday.sport.entity.General;
 import com.crainyday.sport.entity.Match;
 import com.crainyday.sport.entity.Referee;
 import com.crainyday.sport.entity.Team;
@@ -36,6 +37,7 @@ import com.crainyday.sport.excel.ReadRefereeListener;
 import com.crainyday.sport.excel.RefereeData;
 import com.crainyday.sport.exception.EventException;
 import com.crainyday.sport.exception.GamesException;
+import com.crainyday.sport.exception.GeneralException;
 import com.crainyday.sport.mapper.ApplyMapper;
 import com.crainyday.sport.mapper.EventMapper;
 import com.crainyday.sport.mapper.GamesMapper;
@@ -138,6 +140,29 @@ public class AdminServiceImpl implements AdminService {
 		if (file.exists()) {
 			file.delete();
 		}
+	}
+	/**
+	 * 重置用户认证信息
+	 */
+	@Transactional(propagation = Propagation.REQUIRED,
+			   isolation = Isolation.READ_COMMITTED,
+			   readOnly = false)
+	public void resetIdentity(String identity, Integer adminId) throws Exception {
+		String prefix = userMapper.getPrefix(adminId);
+		General general = generalMapper.getGeneralByIdentity(prefix + identity);
+		if(general == null) {
+			throw new GeneralException("该用户不存在");
+		}
+		if(general.getUserId() == null) {
+			throw new GeneralException("该用户已经重置");
+		}
+		// 更新用户类型
+		User user = new User();
+		user.setUserId(general.getUserId());
+		user.setUserType(0);
+		general.setUserId(-1);
+		generalMapper.updateGeneral(general);
+		userMapper.updateUser(user);
 	}
 	/**
 	 * 拉取某个运动会的裁判信息
@@ -533,7 +558,7 @@ public class AdminServiceImpl implements AdminService {
 		// 过期时间: 30分钟
 		long expires = System.currentTimeMillis() / 1000 + 1800;
 		// scene参数: expires过期时间 eventId项目ID
-		param.put("scene", "a=" + expires + "&b=" + eventId);
+		param.put("scene", "a:" + expires + ";b:" + eventId);
 		weChatUtil.getWxacodeUnlimited(filePath + fileName, param);
 		return fileName;
 	}
