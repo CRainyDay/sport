@@ -1,6 +1,7 @@
 package com.crainyday.sport.service;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,7 @@ import com.crainyday.sport.mapper.UserMapper;
 import com.crainyday.sport.utils.JsonUtil;
 import com.crainyday.sport.utils.WeChatUtil;
 import com.crainyday.sport.wechat.MatchBegin;
+import com.crainyday.sport.wechat.MatchUpdate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 @Service("adminService")
@@ -526,18 +528,21 @@ public class AdminServiceImpl implements AdminService {
 		String userIdsJson = matchMapper.getUserIdsByMatchId(match.getMatchId());
 		List<Integer> userIds = JsonUtil.Json2List(userIdsJson, Integer.class);
 		List<String> openids = userMapper.getOpenids(userIds);
-		MatchBegin message = new MatchBegin();
+		MatchUpdate message = new MatchUpdate();
 		message.setEventName(eventName);
 		message.setMatchTime(newMatchTime);
 		message.setMatchType(match.getMatchType());
-		message.setRemark("注意比赛时间哦");
+		message.setMatchGroup(match.getMatchGroup().toString());
+		message.setMatchNum(match.getMatchNum());
 		Map<String, Object> param = new HashMap<String, Object>();
-		param.put("template_id", "y4depWCosMgBGQpRxuWix8X0ei461pO8Ec2rxOprSGg");
+		param.put("template_id", "smao7JknRiwwB4IY7qZ8Syhn4Awba6dG-VI58fxN3yE");
 		param.put("page", "index/index");
-		for (String openid : openids) {
-			param.put("touser", openid);
-			weChatUtil.sendSubscribeMessage(param, message);
-		}
+//		for (String openid : openids) {
+//			param.put("touser", openid);
+//			weChatUtil.sendSubscribeMessage(param, message);
+//		}
+		// 异步发送订阅消息
+		weChatUtil.sendAsync(openids, param, message);
 	}
 	/**
 	 * 管理员获取运动会的简略项目信息.
@@ -548,12 +553,32 @@ public class AdminServiceImpl implements AdminService {
 	/**
 	 * 获取检录某一项目比赛的二维码
 	 */
-	public String getCheckQRCode(String filePath, Integer eventId) throws Exception {
+	public String getCheckQRCode(String filePath, Integer eventId,String eventName) throws Exception {
 		String fileName = "event_" + eventId + ".png";
-		List<Integer> matchIds = matchMapper.getEventNewestMatchIds(eventId);
-		if(matchIds.size() == 0) {
+		List<Match> matches = matchMapper.getEventNewestMatches(eventId);
+		if(matches == null || matches.size() == 0) {
 			throw new EventException("暂无待检录比赛，请先更新比赛时间！");
 		}
+        String format = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+		for (Match match : matches) {
+			if(match.getMatchId() != 1) break;
+			String userIdsJson = matchMapper.getUserIdsByMatchId(match.getMatchId());
+			List<Integer> userIds = JsonUtil.Json2List(userIdsJson, Integer.class);
+			List<String> openids = userMapper.getOpenids(userIds);
+			
+			MatchBegin message = new MatchBegin();
+			message.setEventName(eventName);
+			message.setMatchTime(sdf.format(match.getMatchTime()));
+			message.setMatchType(match.getMatchType());
+			message.setRemark("比赛马上开始，请在30分钟内进行检录！");
+			
+			Map<String, Object> param = new HashMap<String, Object>();
+			param.put("template_id", "y4depWCosMgBGQpRxuWix8X0ei461pO8Ec2rxOprSGg");
+			param.put("page", "index/index");
+			weChatUtil.sendAsync(openids, param, message);
+		}
+		
 		Map<String, Object> param = new HashMap<String, Object>();
 		// 过期时间: 30分钟
 		long expires = System.currentTimeMillis() / 1000 + 1800;

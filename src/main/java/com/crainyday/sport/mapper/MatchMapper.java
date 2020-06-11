@@ -43,7 +43,7 @@ public interface MatchMapper {
 	 */
 	public Boolean judgeCreatMatches(@Param("eventId")Integer eventId);
 	/**
-	 * 获取某一项目最新的比赛IDs, 用于检录信息.
+	 * 获取某一项目最新的比赛(信息), 用于检录信息.
 	 */
-	public List<Integer> getEventNewestMatchIds(@Param("eventId")Integer eventId);
+	public List<Match> getEventNewestMatches(@Param("eventId")Integer eventId);
 }

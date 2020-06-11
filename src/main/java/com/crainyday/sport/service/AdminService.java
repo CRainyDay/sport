@@ -102,6 +102,7 @@ public interface AdminService {
 	public List<EventAdmin> getEventAdmin(Integer gamesId, Integer page, Integer limit);
 	/**
 	 * 获取检录某一项目比赛的二维码
+	 * @param eventName 
 	 */
-	public String getCheckQRCode(String filePath, Integer eventId) throws Exception ;
+	public String getCheckQRCode(String filePath, Integer eventId, String eventName) throws Exception ;
 }

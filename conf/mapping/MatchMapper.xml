@@ -47,8 +47,9 @@
 		SELECT COUNT(match_id) FROM `match` WHERE event_id = #{eventId} AND 
 		(`match`.match_time IS NULL OR `match`.match_time > NOW())
 	</select>
-	<select id="getEventNewestMatchIds" resultType="Integer">
-		SELECT match_id FROM `match` WHERE event_id = #{eventId} AND 
+	<select id="getEventNewestMatches" resultType="Match">
+		SELECT match_id, match_time, match_type 
+		FROM `match` WHERE event_id = #{eventId} AND 
 		`match`.match_time > NOW()
 	</select>
 </mapper>

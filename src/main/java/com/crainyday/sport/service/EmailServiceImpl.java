@@ -30,6 +30,7 @@ public class EmailServiceImpl implements EmailService {
 			throw new MessagingException("请输入教育邮箱!");
 		}
 		try {
+			if(nickname == null) nickname = "";
 			MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 			MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
 			// 用于接收邮件的邮箱

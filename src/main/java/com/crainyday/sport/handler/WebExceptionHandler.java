@@ -23,7 +23,7 @@ public class WebExceptionHandler {
     Map<String, Object> handleException(Exception e){
         LOGGER.error(e.getMessage(), e);
         Map<String, Object> map = new HashMap<String, Object>();
-		map.put("errmsg", "未知异常，请重试！");
+		map.put("errmsg", "未知异常，请返回重试！");
 		map.put("status", 403);
 		return map;
     }

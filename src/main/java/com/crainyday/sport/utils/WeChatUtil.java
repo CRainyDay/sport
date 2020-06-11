@@ -1,11 +1,13 @@
 package com.crainyday.sport.utils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import com.crainyday.sport.wechat.AccessToken;
@@ -45,6 +47,21 @@ public class WeChatUtil {
 			getAccessToken("client_credential");
 		}
 		return accessToken.getAccessToken();
+	}
+	
+	/**
+	 * 异步发送订阅消息
+	 * @param openids
+	 * @param param
+	 * @param msg
+	 * @throws Exception
+	 */
+	@Async
+	public void sendAsync(List<String> openids, Map<String, Object> param, Object msg) throws Exception{
+		for (String openid : openids) {
+			param.put("touser", openid);
+			this.sendSubscribeMessage(param, msg);
+		}
 	}
 	/**
 	 * 发送订阅消息

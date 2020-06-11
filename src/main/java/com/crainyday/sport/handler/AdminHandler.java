@@ -379,9 +379,10 @@ public class AdminHandler {
 	 */
 	@PostMapping("/getCheckQRCode")
 	public Map<String, Object> getCheckQRCode(HttpSession session,
-			@RequestParam("eventId")Integer eventId) throws Exception  {
+			@RequestParam("eventId")Integer eventId,
+			@RequestParam("eventName")String eventName) throws Exception  {
 		String filePath = session.getServletContext().getRealPath("qrcode/");
-		String filename = adminService.getCheckQRCode(filePath, eventId);
+		String filename = adminService.getCheckQRCode(filePath, eventId, eventName);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("filename", filename);
 		map.put("errmsg", "检录二维码生成成功，注意保存！");
